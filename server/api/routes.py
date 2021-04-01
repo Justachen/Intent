@@ -24,13 +24,12 @@ def token_required(f):
 		return f(current_user, *args, **kwargs)
 	return decorated
 
-
+# Serve React App
 @app.route('/')
 def main():
-	##This route returns the js build for the website
 	return {"home": "you are here"}
 
-#Development route for keeping track and testing database for users
+# Development route for keeping track and testing database for users
 @app.route('/api/user/<public_id>', methods=['GET'])
 @token_required
 def get_user(current_user, public_id):
@@ -47,7 +46,7 @@ def get_user(current_user, public_id):
 
 	return {'user': user_data}
 
-#Development route for keeping track and testing database for users
+# Development route for keeping track and testing database for users
 @app.route('/api/user', methods=['GET'])
 @token_required
 def get_all_user(current_user):
@@ -65,7 +64,7 @@ def get_all_user(current_user):
 
 	return {'users': output}
 
-#Register new users
+# Register new users
 @app.route('/api/user', methods=['POST'])
 def create_user():
 	data = request.get_json()
@@ -78,25 +77,25 @@ def create_user():
 
 	return {'message' : 'New user created!'}
 
-#Login and generate a jwt token for user session
+# Login and generate a jwt token for user session
 @app.route('/login')
 def login():
 	auth = request.authorization
-	## No authorization information provided
+	# No authorization information provided
 	if not auth or not auth.username or not auth.password:
 		return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 	user = User.query.filter_by(username=auth.username).first()
-	## Incorrect Username
+	# Incorrect Username
 	if not user:
 		return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
-	## Incorrect Password
+	# Incorrect Password
 	if bcrypt.check_password_hash(user.password, auth.password):
 		token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'], algorithm='HS256')
 		return {'token' : token}
 	return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
 
-#Remove users from database
+# Remove users from database
 @app.route('/api/user/<public_id>', methods=['DELETE'])
 @token_required
 def delete_user(current_user, public_id):
@@ -109,7 +108,7 @@ def delete_user(current_user, public_id):
 
 	return {'message' : 'User was deleted'}
 
-#Logout of account
+# Logout of account
 @app.route('/logout')
 @token_required
 def logout(current_user):
