@@ -18,6 +18,7 @@
 .env.test.local
 .env.production.local
  __pycache__
+ **/__pycache__/
  *.pycl
 
 npm-debug.log*
