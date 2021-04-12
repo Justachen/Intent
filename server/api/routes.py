@@ -40,7 +40,6 @@ def get_user(current_user, public_id):
 
 	user_data = {}
 	user_data['public_id'] = user.public_id
-	user_data['username'] = user.username
 	user_data['email'] = user.email
 	user_data['password'] = user.password 
 
@@ -57,7 +56,6 @@ def get_all_user(current_user):
 	for user in users:
 		user_data = {}
 		user_data['public_id'] = user.public_id
-		user_data['username'] = user.username
 		user_data['email'] = user.email
 		user_data['password'] = user.password 
 		output.append(user_data)
@@ -68,10 +66,14 @@ def get_all_user(current_user):
 @app.route('/api/user', methods=['POST'])
 def create_user():
 	data = request.get_json()
+	user = User.query.filter_by(email=data['email']).first()
+	if user:
+		abort(400, 'Email is already registered!')
+
 	temp_pass = data['password']
 	hashed_password = bcrypt.generate_password_hash(temp_pass).decode('utf-8') ## Look into switching this hashing to bcrypt
 
-	new_user = User(public_id=str(uuid.uuid4()), username=data['username'], email=data['email'], password=hashed_password)
+	new_user = User(public_id=str(uuid.uuid4()), email=data['email'].lower(), password=hashed_password)
 	db.session.add(new_user)
 	db.session.commit()
 
@@ -83,16 +85,16 @@ def login():
 	auth = request.authorization
 	# No authorization information provided
 	if not auth or not auth.username or not auth.password:
-		return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
-	user = User.query.filter_by(username=auth.username).first()
-	# Incorrect Username
+		return make_response('Missing information', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+	user = User.query.filter_by(email=auth.username.lower()).first()
+	# Incorrect email
 	if not user:
-		return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+		return make_response('Could not verify email', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 	# Incorrect Password
 	if bcrypt.check_password_hash(user.password, auth.password):
 		token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'], algorithm='HS256')
 		return {'token' : token}
-	return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+	return make_response('Could not verify password', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
 
 # Remove users from database
