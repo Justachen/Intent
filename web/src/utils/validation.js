@@ -46,3 +46,14 @@ export function isDecimalNumber(value) {
 export function isTrue(value) {
   return value === true;
 }
+
+export const emailUsed = email =>
+  fetch(`http://127.0.0.1:5000/api/validate_user`, {
+              method: 'POST', // *GET, POST, PUT, DELETE, etc.
+              headers: {
+              'Access-Control-Allow-Origin': '*',
+              'Content-Type': 'application/json',
+           // 'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: JSON.stringify({email: email.trim()}),
+            });

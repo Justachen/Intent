@@ -66,9 +66,10 @@ def get_all_user(current_user):
 @app.route('/api/user', methods=['POST'])
 def create_user():
 	data = request.get_json()
-	user = User.query.filter_by(email=data['email']).first()
+	user = User.query.filter_by(email=data['email']).first() 
 	if user:
-		abort(400, 'Email is already registered!')
+		return {'message' : 'Email already registered'}, 400
+
 
 	temp_pass = data['password']
 	hashed_password = bcrypt.generate_password_hash(temp_pass).decode('utf-8') ## Look into switching this hashing to bcrypt
@@ -80,21 +81,22 @@ def create_user():
 	return {'message' : 'New user created!'}
 
 # Login and generate a jwt token for user session
-@app.route('/login')
+@app.route('/api/login', methods=['POST'])
 def login():
-	auth = request.authorization
-	# No authorization information provided
-	if not auth or not auth.username or not auth.password:
-		return make_response('Missing information', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
-	user = User.query.filter_by(email=auth.username.lower()).first()
-	# Incorrect email
+	print("in login")
+	data = request.get_json()
+	# Authorization information missing
+	if not data or not data['email'] or not data['password']:
+		return {'message' : 'Missing login information'}, 400
+	user = User.query.filter_by(email=data['email'].lower()).first()
+	# Email already in DB
 	if not user:
-		return make_response('Could not verify email', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+		return {'message' : 'Can not find existing user with this email'}, 400
 	# Incorrect Password
-	if bcrypt.check_password_hash(user.password, auth.password):
-		token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'], algorithm='HS256')
-		return {'token' : token}
-	return make_response('Could not verify password', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+	if bcrypt.check_password_hash(user.password, data['password']):
+		token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=300)}, app.config['SECRET_KEY'], algorithm='HS256')
+		return {'token' : token}, 200
+	return {'message' : 'Password incorrect'}, 400
 
 
 # Remove users from database
@@ -117,5 +119,14 @@ def logout(current_user):
 
 	return {'Logged out!'}, 401
 
+# Check if email is already registered
+@app.route('/api/validate_user', methods=['POST'])
+def validate_user():
+	print('request', request)
+	data = request.get_json()
+	user = User.query.filter_by(email=data['email']).first() 
+	#TODO check if user has confirmed emails/accounts
+
+	return {"exists": bool(user)}
 
 

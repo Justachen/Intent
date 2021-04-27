@@ -10,17 +10,19 @@ import {
 interface InputFieldProps {
   name: string;
   label: string;
+  'aria-label'?: string;
   placeholder?: string;
   type?: string;
+  onBlur?: () => void;
 }
 
 const InputField: React.FC<InputFieldProps> = ({ label, ...props }) => {
   const [field, meta] = useField(props);
   return (
-    <FormControl isInvalid={!!meta.error}>
+    <FormControl isInvalid={!!meta.error && meta.touched}>
       <FormLabel>{label}</FormLabel>
-      <Input {...field} {...props} />
       <FormErrorMessage>{meta.error}</FormErrorMessage>
+      <Input {...field} {...props} />
     </FormControl>
   );
 };
