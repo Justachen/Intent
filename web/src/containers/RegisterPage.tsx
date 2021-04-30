@@ -46,7 +46,7 @@ const RegisterPage: React.FC<RegisterPageProps> = () => {
           onSubmit={async (values) => {
             const { confirm, ...body } = values;
             const url = "http://127.0.0.1:5000/api/user";
-            const response = await fetch(url, {
+            await fetch(url, {
               method: "POST", // *GET, POST, PUT, DELETE, etc.
               headers: {
                 "Access-Control-Allow-Origin": "*",

@@ -16,6 +16,7 @@ const App = () => {
   React.useEffect(() => {
     if (token) {
       const jwt = JSON.parse(token);
+      console.log(jwt);
       setToken(jwt);
       toggleLogIn();
     }
