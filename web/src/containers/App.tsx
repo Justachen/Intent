@@ -1,17 +1,27 @@
 import * as React from "react";
-import { useState } from "react";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import { ChakraProvider } from "@chakra-ui/react";
+
+import useStore from "../services/store";
 import Header from "./Header";
 import HomePage from "./HomePage";
 import RegisterPage from "./RegisterPage";
 import LoginPage from "./LoginPage";
 
-//const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
-
 const App = () => {
+  const toggleLogIn = useStore((state: any) => state.toggleLoggedIn);
+  const setToken = useStore((state: any) => state.setJWT);
+  const token = localStorage.getItem("token");
 
-  return(
+  React.useEffect(() => {
+    if (token) {
+      const jwt = JSON.parse(token);
+      setToken(jwt);
+      toggleLogIn();
+    }
+  }, []);
+
+  return (
     <ChakraProvider>
       <BrowserRouter>
         <Header />
@@ -23,6 +33,6 @@ const App = () => {
       </BrowserRouter>
     </ChakraProvider>
   );
-}
+};
 
 export default App;

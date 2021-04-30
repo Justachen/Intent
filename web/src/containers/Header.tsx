@@ -1,11 +1,21 @@
-import React, { useState } from "react";
+import React from "react"; // get rid of useState if Zustand works
 import { Link } from "react-router-dom";
 import { Flex, Button, ButtonGroup } from "@chakra-ui/react";
+
+import useStore from "../services/store";
 
 interface HeaderProps {}
 
 const Header: React.FC<HeaderProps> = () => {
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const isUserLoggedIn = useStore((state: any) => state.isUserLoggedIn);
+  const toggleLoggedIn = useStore((state: any) => state.toggleLoggedIn);
+  const clearJWT = useStore((state: any) => state.setJWT);
+
+  const logout = () => {
+    clearJWT(null);
+    toggleLoggedIn();
+    window.localStorage.removeItem("token");
+  };
 
   return (
     <Flex
@@ -22,7 +32,7 @@ const Header: React.FC<HeaderProps> = () => {
       </Button>
       <Flex flex={1} />
       {isUserLoggedIn ? (
-        <Button variant="link" colorScheme="black">
+        <Button variant="link" colorScheme="black" onClick={logout}>
           <Link to="/">Sign Out</Link>
         </Button>
       ) : (
