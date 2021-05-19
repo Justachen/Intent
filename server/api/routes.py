@@ -94,7 +94,8 @@ def login():
 		return {'message' : 'Can not find existing user with this email'}, 400
 	# Incorrect Password
 	if bcrypt.check_password_hash(user.password, data['password']):
-		token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=300)}, app.config['SECRET_KEY'], algorithm='HS256')
+		token = jwt.encode({'public_id': user.public_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=300)}, 
+			app.config['SECRET_KEY'], algorithm='HS256')
 		return {'token' : token}, 200
 	return {'message' : 'Password incorrect'}, 400
 
